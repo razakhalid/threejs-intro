@@ -221,3 +221,54 @@ addEventListener('mousemove', (event) => {
     mouse.x = ((event.clientX / innerWidth) * 2) - 1;
     mouse.y = (-(event.clientY / innerHeight) * 2) + 1;
 });
+
+gsap.to('#main-header', {
+    opacity: 1,
+    duration: 1.5,
+    y: 0,
+    ease: 'expo'
+});
+gsap.to('#tagline', {
+    opacity: 1,
+    duration: 1.5,
+    delay: 0.3,
+    y: 0,
+    ease: 'expo'
+});
+gsap.to('#primary-cta', {
+    opacity: 1,
+    duration: 1.5,
+    delay: 0.6,
+    y: 0,
+    ease: 'expo'
+});
+
+document.querySelector('#primary-cta').addEventListener('click', (e) => {
+    e.preventDefault();
+    gsap.to('#container', {
+        opacity: 0
+    });
+    gsap.to(camera.position, {
+        z: 25,
+        ease: 'power3.inOut',
+        duration: 2
+    });
+    gsap.to(camera.rotation, {
+        x: Math.PI / 2,
+        ease: 'power3.inOut',
+        duration: 2
+    });
+    gsap.to(camera.position, {
+        y: 1000,
+        ease: 'power3.in',
+        duration: 2,
+        delay: 2
+    });
+});
+
+addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+});
+
