@@ -4,11 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite & npx tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.output.css --watch",
     "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "tailwindcss": "^3.4.1",
     "vite": "^5.0.8"
   },
   "dependencies": {

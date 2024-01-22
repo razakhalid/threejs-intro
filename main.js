@@ -17,36 +17,16 @@ const renderer = new THREE.WebGLRenderer();
 const gui = new dat.GUI();
 const world = {
     plane: {
-        width: 19,
-        height: 19,
-        widthSegments: 17,
-        heightSegments: 17
+        width: 400,
+        height: 400,
+        widthSegments: 50,
+        heightSegments: 50
     }
 };
-gui.add(
-    world.plane,
-    'width',
-    1,
-    20
-).onChange(generatePlane);
-gui.add(
-    world.plane,
-    'height',
-    1,
-    20
-).onChange(generatePlane);
-gui.add(
-    world.plane,
-    'widthSegments',
-    1,
-    20
-).onChange(generatePlane);
-gui.add(
-    world.plane,
-    'heightSegments',
-    1,
-    20
-).onChange(generatePlane);
+gui.add(world.plane, 'width', 1, 500).onChange(generatePlane);
+gui.add(world.plane, 'height', 1, 500).onChange(generatePlane);
+gui.add(world.plane, 'widthSegments', 1, 100).onChange(generatePlane);
+gui.add(world.plane, 'heightSegments', 1, 100).onChange(generatePlane);
 
 function generatePlane() {
     planeMesh.geometry.dispose();
@@ -56,14 +36,27 @@ function generatePlane() {
         world.plane.widthSegments,
         world.plane.heightSegments
     );
-    const { array } = planeMesh.geometry.attributes.position;
-    for (let i = 0; i < array.length; i += 3) {
-        const x = array[i];
-        const y = array[i + 1];
-        const z = array[i + 2];
 
-        array[i + 2] = z + Math.random();
+    // randomize vertex position
+    const { array } = planeMesh.geometry.attributes.position;
+    const randomValues = [];
+    for (let i = 0; i < array.length; i++) {
+
+        if (i % 3 === 0) {
+            const x = array[i];
+            const y = array[i + 1];
+            const z = array[i + 2];
+
+            array[i] = x + ((Math.random() - 0.5) * 3);
+            array[i + 1] = y + ((Math.random() - 0.5) * 3);
+            array[i + 2] = z + ((Math.random() - 0.5) * 3);
+        }
+
+        randomValues.push(Math.random() * Math.PI * 2);
     }
+
+    planeMesh.geometry.attributes.position.randomValues = randomValues;
+    planeMesh.geometry.attributes.position.originalPosition = planeMesh.geometry.attributes.position.array;
 
     const colors = [];
     const { count } = planeMesh.geometry.attributes.position;
@@ -85,7 +78,7 @@ document.body.appendChild(renderer.domElement);
 new OrbitControls(camera, renderer.domElement);
 
 // set camera position
-camera.position.z = 5;
+camera.position.z = 50;
 
 const planeGeometry = new THREE.PlaneGeometry(
     world.plane.width,
@@ -107,45 +100,13 @@ const planeMesh = new THREE.Mesh(
 
 scene.add(planeMesh);
 
-// vertex position randomization
-const { array } = planeMesh.geometry.attributes.position;
-const randomValues = [];
-for (let i = 0; i < array.length; i++) {
-
-    if (i % 3 === 0) {
-        const x = array[i];
-        const y = array[i + 1];
-        const z = array[i + 2];
-
-        array[i] = x + (Math.random() - 0.5);
-        array[i + 1] = y + (Math.random() - 0.5);
-        array[i + 2] = z + Math.random();
-    }
-
-    randomValues.push(Math.random());
-}
-
-planeMesh.geometry.attributes.position.randomValues = randomValues;
-planeMesh.geometry.attributes.position.originalPosition = planeMesh.geometry.attributes.position.array;
-
-// color geometry
-const colors = [];
-const { count } = planeMesh.geometry.attributes.position;
-for (let i = 0; i < count; i++) {
-    colors.push(0, 0.19, 0.4);
-}
-
-planeMesh.geometry.setAttribute(
-    'color',
-    new THREE.BufferAttribute(new
-    Float32Array(colors), 3)
-);
+generatePlane();
 
 const light = new THREE.DirectionalLight(
     0xffffff,
     1
 );
-light.position.set(0, 0, 1);
+light.position.set(0, 1, 1);
 scene.add(light);
 
 const backLight = new THREE.DirectionalLight(
@@ -157,6 +118,23 @@ backLight.position.set(
     0,
     -1);
 scene.add(backLight);
+
+const starMaterial = new THREE.PointsMaterial({
+    color: 0xffffff
+});
+const starGeometry = new THREE.BufferGeometry();
+
+const starVertices = [];
+for (let i = 0; i < 10000; i++) {
+    const x = (Math.random() - 0.5) * 2000;
+    const y = (Math.random() - 0.5) * 2000;
+    const z = (Math.random() - 0.5) * 2000;
+    starVertices.push(x, y, z);
+}
+
+starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+const stars = new THREE.Points(starGeometry, starMaterial);
+scene.add(stars);
 
 const mouse = {
     x: undefined,
@@ -234,7 +212,7 @@ function animate() {
             }
         });
     }
-
+    stars.rotation.x += 0.0005;
 }
 
 animate();
